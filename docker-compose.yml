@@ -1,0 +1,84 @@
+version: '3.8'
+
+x-postgres-common: &postgres-common
+  image: postgres:15
+  environment:
+    POSTGRES_USER: admin
+    POSTGRES_PASSWORD: password
+  restart: always
+  networks:
+    - data_net
+
+services:
+  # --- SERVIDORES DE DADOS ---
+  pg_bronze:
+    <<: *postgres-common
+    container_name: pg_bronze
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: db_bronze
+    ports:
+      - "5432:5432"
+
+  pg_silver:
+    <<: *postgres-common
+    container_name: pg_silver
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: db_silver
+    ports:
+      - "5433:5432"
+
+  pg_gold:
+    <<: *postgres-common
+    container_name: pg_gold
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: db_gold
+    ports:
+      - "5434:5432"
+
+  postgres_airflow:
+    image: postgres:13
+    container_name: postgres_airflow
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow_pass
+      POSTGRES_DB: airflow
+    networks:
+      - data_net
+
+ # --- AIRFLOW (API Server + Scheduler no LocalExecutor) ---
+  airflow:
+      # Usando a versão super estável 2.10.0 com o Python 3.12!
+      image: apache/airflow:2.10.0-python3.12
+      container_name: airflow_monolith
+      depends_on:
+        - postgres_airflow
+      environment:
+        - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+        - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow_pass@postgres_airflow/airflow
+        - AIRFLOW__CORE__LOAD_EXAMPLES=False
+        - _PIP_ADDITIONAL_REQUIREMENTS=duckdb pandas faker psycopg2-binary
+        - PYTHONPATH=/opt/airflow
+      volumes:
+        - ./dags:/opt/airflow/dags
+        - ./scripts:/opt/airflow/scripts
+      ports:
+        - "8080:8080"
+      # Voltamos ao comando clássico que funciona de primeira nessa versão
+      command: >
+        bash -c "
+        airflow db migrate ;
+        airflow users create --username admin --password admin --firstname Data --lastname Engineer --role Admin --email admin@example.com || true ;
+        airflow webserver &
+        airflow scheduler
+        "
+      networks:
+        - data_net
+networks:
+  data_net:
+    driver: bridge
