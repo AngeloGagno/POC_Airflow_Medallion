@@ -6,8 +6,6 @@ SILVER_CON = "postgresql://admin:password@pg_silver:5432/db_silver"
 
 def silver_sales():
     nome_checkpoint = "silver_sales_v1"
-
-    # 1. Garante a estrutura do destino
     db_silver = DatabaseFunctions(db_con_string=SILVER_CON, database='db_silver', schema='silver', table='vendas')
     db_silver.create("""
         CREATE TABLE IF NOT EXISTS db_alvo.silver.vendas (
@@ -23,7 +21,6 @@ def silver_sales():
     
     db_bronze = DatabaseFunctions(db_con_string=BRONZE_CON, database='db_bronze', schema='bronze', table='sales')
     
-    # 3. A Query Limpa (Sem criar tabelas físicas ou temporárias)
     query_extracao = f"""
         select 
             (payload->>'sale_id')::VARCHAR as sale_id,

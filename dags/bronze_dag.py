@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
-from scripts.product.bronze import bronze_ecommerce
+from scripts.bronze import bronze_ecommerce
 default_args = {
     'owner': 'pato',
     'depends_on_past': False,
