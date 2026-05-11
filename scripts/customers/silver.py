@@ -38,7 +38,8 @@ def silver_customers():
             (payload->>'data_cadastro')::VARCHAR AS data_cadastro,
             data_ingestao
         FROM db_origem.bronze.users
-        ORDER BY data_cadastro ASC LIMIT 10
+        WHERE (payload->>'data_venda')::TIMESTAMP > '{ultima_data}'
+        ORDER BY data_cadastro ASC LIMIT 10000
     """
 
     query_max_date = f"SELECT MAX(data_cadastro) FROM ({query_extracao}) AS batch_limitado"
@@ -64,7 +65,7 @@ def silver_customers():
             )
             
         except Exception as e:
-            print(f"❌ Erro durante a inserção. O checkpoint NÃO foi atualizado. Erro: {e}")
+            print(f"Erro durante a inserção. O checkpoint NÃO foi atualizado. Erro: {e}")
             raise e
     else:
         print("ℹ️ Nenhum dado novo encontrado na Bronze para este lote.")

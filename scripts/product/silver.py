@@ -22,7 +22,6 @@ def silver_products():
     
     db_bronze = DatabaseFunctions(db_con_string=BRONZE_CON, database='db_bronze', schema='bronze', table='products')
     
-    # 3. A Query Limpa (Sem criar tabelas físicas ou temporárias)
     query_extracao = f"""
         SELECT 
             (payload->>'product_id')::VARCHAR AS product_id,
@@ -31,18 +30,14 @@ def silver_products():
             (((payload->>'preco_venda')::DECIMAL - (payload->>'preco_custo')::DECIMAL) / (payload->>'preco_custo')::DECIMAL * 100)::DECIMAL(10,2) AS margem_lucro,
             data_ingestao AS data_atualizacao
         FROM db_origem.bronze.products
-        WHERE data_ingestao > '{ultima_data}'
-        ORDER BY data_ingestao ASC LIMIT 10
+        ORDER BY data_ingestao ASC
     """
 
     query_max_date = f"SELECT MAX(data_atualizacao) FROM ({query_extracao}) AS batch_limitado"
     
     df_max = db_bronze.select(sql_query=query_max_date, output_format='df')
     nova_data_maxima = df_max.iloc[0, 0]
-
-    # ==========================================
-    # 5. EXECUÇÃO TRANSACIONAL
-    # ==========================================
+    
     if nova_data_maxima is not None and str(nova_data_maxima) != 'NaT':
         try:
             db_bronze.insert(
