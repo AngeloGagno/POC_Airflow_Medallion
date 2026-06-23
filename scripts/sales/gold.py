@@ -6,7 +6,7 @@ SILVER_CON = "postgresql://admin:password@pg_silver:5432/db_silver"
 def gold_vendas():
     print("Iniciando processamento da Gold Vendas...")
     query_criacao = """
-        CREATE TABLE IF NOT EXISTS db_alvo.gold.vendas (
+        CREATE TABLE IF NOT EXISTS gold.gold.vendas (
             nome_produto VARCHAR, 
             total_vendido INTEGER, 
             margem_lucro FLOAT,
@@ -24,7 +24,7 @@ def gold_vendas():
             date_trunc('day', dt_venda) as dt_venda,
             stauts_pedido as status_pedido, 
             nome_cliente
-        FROM db_origem.silver.venda_consolidada
+        FROM silver.silver.venda_consolidada
         WHERE nome_produto IS NOT NULL
           AND dt_venda >= '{ultima_data}'::timestamp
           AND dt_venda < '{ultima_data}'::timestamp + INTERVAL '1 day'
@@ -36,26 +36,5 @@ def gold_vendas():
         ORDER BY date_trunc('day', dt_venda)
     """
 
-    # 3. CHAMADA DO FRAMEWORK
-    executar_carga_incremental(
-        # Origem (A sua tabela base na Silver)
-        source_con=SILVER_CON,
-        source_db='db_silver',
-        source_schema='silver',
-        source_table='venda_consolidada',
-        
-        # Destino (A nova tabela agrupada na Gold)
-        target_con=GOLD_CON,
-        target_db='db_gold',
-        target_schema='gold',
-        target_table='vendas',
-        
-        # Parâmetros lógicos
-        checkpoint_name='checkpoint_gold_vendas_v4',
-        query_criacao_alvo=query_criacao,
-        query_extracao_template=query_extracao,
-        coluna_referencia_data='dt_venda'
-    )
-
-if __name__ == "__main__":
-    gold_vendas()
+    
+    

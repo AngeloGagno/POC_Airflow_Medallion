@@ -8,6 +8,6 @@ def commit_checkpoint(checkpoint_name: str, nova_data_maxima):
     """Salva o novo estado no banco do Airflow de forma permanente."""
     if nova_data_maxima is not None and str(nova_data_maxima) != 'NaT':
         Variable.set(checkpoint_name, str(nova_data_maxima))
-        print(f"✅ Checkpoint '{checkpoint_name}' atualizado com sucesso para: {nova_data_maxima}")
+        print(f"checkpoint '{checkpoint_name}' atualizado com sucesso para: {nova_data_maxima}")
         return True
     return False

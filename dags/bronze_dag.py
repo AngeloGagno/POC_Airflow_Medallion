@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
-from scripts.bronze import bronze_ecommerce
+from scripts.bronze import raw_ecommercie
 default_args = {
     'owner': 'pato',
     'depends_on_past': False,
@@ -18,7 +18,7 @@ with DAG(
 ) as dag:
     task_generate_raw = PythonOperator(
         task_id='generate_raw',
-        python_callable=bronze_ecommerce
+        python_callable=raw_ecommercie
     )
 
 task_generate_raw

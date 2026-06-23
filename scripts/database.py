@@ -99,6 +99,7 @@ class DatabaseFunctions:
             raise e
         finally:
             con_duckdb.close()
+
     def incremental_insert(
             self,
             target_con: str,
@@ -162,3 +163,10 @@ class DatabaseFunctions:
                     )          
                 except Exception as e:
                     raise e
+                
+    def incremental_upsert():
+        pass
+
+    def scd_type2():
+        pass
+    
