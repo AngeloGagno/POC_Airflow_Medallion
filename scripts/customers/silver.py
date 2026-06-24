@@ -32,5 +32,5 @@ def silver_customers():
         ORDER BY data_cadastro ASC LIMIT 10000
     """
     bronze = DatabaseFunctions(db_con_string=BRONZE_CON,database='bronze',schema='bronze',table='users')
-    bronze.incremental_insert(target_con=SILVER_CON,target_db='silver',target_schema='silver',target_table='clientes',query_criacao_alvo=table,query_extracao_template=query
-                            , coluna_referencia_data='data_venda')
+    bronze.incremental_upsert(target_con=SILVER_CON,target_db='silver',target_schema='silver',target_table='clientes', checkpoint_name=nome_checkpoint, query_criacao_alvo=table, query_extracao_template=query
+                            , coluna_referencia_data='data_venda', coluna_merge='user_id', condition_merge='UPDATE')
