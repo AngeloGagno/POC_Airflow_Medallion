@@ -17,7 +17,7 @@ def silver_sales():
                 (payload->>'sale_id')::VARCHAR as sale_id,
                 (payload->>'user_id')::VARCHAR as user_id,
                 (payload->>'product_id')::VARCHAR as product_id,
-                (payload->>'quantidade')::VARCHAR as quantidade,
+                (payload->>'quantidade')::INTEGER as quantidade,
                 case
                     when (payload->>'metodo_pagamento')::INTEGER = 1 then 'dinheiro'
                     when (payload->>'metodo_pagamento')::INTEGER = 2 then 'credito'
@@ -36,7 +36,28 @@ def silver_sales():
             WHERE (payload->>'data_venda')::TIMESTAMP > '{ultima_data}'
             ORDER BY (payload->>'data_venda')::TIMESTAMP ASC LIMIT 25000
         """
+    
+    query_upsert_pura = """
+        INSERT INTO silver.vendas (
+            sale_id, user_id, product_id, quantidade, 
+            metodo_pagamento, status_pedido, data_venda, data_ingestao
+        )
+        SELECT 
+            sale_id, user_id, product_id, quantidade, 
+            metodo_pagamento, status_pedido, data_venda, data_ingestao
+        FROM silver.vendas_stg
+        
+        ON CONFLICT (sale_id) 
+        DO UPDATE SET 
+            user_id = EXCLUDED.user_id,
+            product_id = EXCLUDED.product_id,
+            quantidade = EXCLUDED.quantidade,
+            metodo_pagamento = EXCLUDED.metodo_pagamento,
+            status_pedido = EXCLUDED.status_pedido,
+            data_venda = EXCLUDED.data_venda,
+            data_ingestao = EXCLUDED.data_ingestao;
+    """
     database_bronze = DatabaseFunctions(db_con_string=BRONZE_CON,database='db_bronze',schema='bronze',table='sales')
-    database_bronze.incremental_upsert(target_con=SILVER_CON,target_db='db_silver',target_schema='silver',target_table='vendas',checkpoint_name='silver_vendas2',
+    database_bronze.incremental_upsert(target_con=SILVER_CON,target_db='db_silver',target_schema='silver',target_table='vendas',checkpoint_name='silver_vendas5',
                                     query_criacao_alvo=table,
-                                    query_extracao_template=query,coluna_referencia_data='data_venda', coluna_merge='sale_id', condition_merge='UPDATE')
+                                    query_extracao_template=query,query_upsert_postgres=query_upsert_pura, coluna_referencia_data='data_venda')
