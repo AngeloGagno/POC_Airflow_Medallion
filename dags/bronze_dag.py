@@ -3,7 +3,7 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime
 from scripts.bronze import raw_ecommercie
 default_args = {
-    'owner': 'pato',
+    'owner': 'angelo',
     'depends_on_past': False,
     'retries': 1,
 }

@@ -4,7 +4,7 @@ from datetime import datetime
 from scripts.sales.bronze import bronze_sales
 from scripts.sales.silver import silver_sales
 default_args = {
-    'owner': 'pato',
+    'owner': 'angelo',
     'depends_on_past': False,
     'retries': 1,
 }
@@ -13,7 +13,7 @@ with DAG(
     dag_id='sales',
     default_args=default_args,
     start_date=datetime(2026, 4, 1),
-    schedule_interval='@daily',
+    schedule_interval='*/3 * * * *',
     catchup=False,
     tags=['duckdb', 'medallion', 'ecommerce']
 ) as dag:

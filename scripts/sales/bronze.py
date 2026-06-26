@@ -15,4 +15,4 @@ def bronze_sales():
 
     raw = DatabaseFunctions(db_con_string=BRONZE_CON,database='db_bronze',schema='raw',table='raw_sales')
     raw.incremental_insert(target_con=BRONZE_CON,target_db='db_bronze',target_schema='bronze',target_table='sales',
-                        checkpoint_name='bronze_sales3',query_criacao_alvo=table, query_extracao_template= query, coluna_referencia_data= 'data_ingestao')
+                        checkpoint_name='bronze_sales5',query_criacao_alvo=table, query_extracao_template= query, coluna_referencia_data= 'data_ingestao')
